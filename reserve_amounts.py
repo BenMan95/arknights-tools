@@ -20,8 +20,8 @@ def convert_mats(mats):
     }
 
 @cached('data/reserve.json')
-def calc_reserve_amounts(read_cache=True):
-    operator_data = get_operator_data(read_cache=read_cache)
+def calc_reserve_amounts():
+    operator_data = get_operator_data()
 
     operator_max = {}
     elite_max = {}
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--shop', action='store_true')
     args = parser.parse_args()
 
-    reserve_amounts = calc_reserve_amounts(read_cache=True)
+    reserve_amounts = calc_reserve_amounts()
     items_dict = get_item_data()
 
     if args.add or args.overwrite or args.shop:

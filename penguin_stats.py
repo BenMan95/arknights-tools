@@ -3,46 +3,18 @@ import json
 
 from utils import cached
 
-from datetime import datetime
-#from pydantic import BaseModel
-
 SERVER = 'CN'
 API_BASE = 'https://penguin-stats.io/PenguinStats/api/v2'
 
-#class Existence(BaseModel):
-#    closeTime: Optional[datetime] = None
-#    openTime: Optional[datetime] = None
-#    exist: bool
-#
-#class Bounds(BaseModel):
-#    lower: int
-#    upper: str
-#
-#class DropInfo(BaseModel):
-#    itemId: str
-#    dropType: str
-#    bounds: Bounds
-#
-#class Stage(BaseModel):
-#    stageId: str
-#    zoneId: str
-#    stageType: str
-#    code: str
-#    code_i18n: dict[str, str]
-#    apCost: int
-#    existence: dict[str, Existence]
-#    minClearTime: int
-#    isGacha: bool
-
 @cached('data/stages.json')
-def load_stages(read_cache=True):
+def load_stages():
     print('Loading stages...')
     stages = requests.get(API_BASE + '/stages').json()
     return stages
 
-@cached('data/stage_code_map.json')
-def stage_code_map(read_cache=True):
-    stages = load_stages(read_cache=read_cache)
+@cached('data/stage-code-map.json')
+def stage_code_map():
+    stages = load_stages()
     code_map = {}
 
     for stage in stages:
@@ -56,9 +28,9 @@ def stage_code_map(read_cache=True):
 
     return code_map
 
-@cached('data/stage_id_map.json')
-def stage_id_map(read_cache=True):
-    stages = load_stages(read_cache=read_cache)
+@cached('data/stage-id-map.json')
+def stage_id_map():
+    stages = load_stages()
     id_map = {}
 
     for stage in stages:
@@ -68,8 +40,8 @@ def stage_id_map(read_cache=True):
 
     return id_map
 
-@cached('data/items.json')
-def load_items(read_cache=True):
+@cached('data/items-penguin-stats.json')
+def load_items():
     print('Loading item IDs...')
     items_list = requests.get(API_BASE + '/items').json()
     print(len(items_list), 'eles loaded.')
@@ -84,9 +56,9 @@ def load_items(read_cache=True):
         if 'en' in item['name_i18n']
     }
 
-def convert_stage_codes(stage_codes, read_cache=True):
-    id_map = stage_id_map(read_cache=read_cache)
-    code_map = stage_code_map(read_cache=read_cache)
+def convert_stage_codes(stage_codes, ):
+    id_map = stage_id_map()
+    code_map = stage_code_map()
 
     stage_ids = []
 
@@ -104,7 +76,7 @@ def convert_stage_codes(stage_codes, read_cache=True):
     return stage_ids
 
 
-def load_drops(stage_ids, read_cache=True):
+def load_drops(stage_ids, ):
     assert len(stage_ids) > 0
     print('Loading stage drops matrix...')
     drops_matrix = requests.get(API_BASE + '/result/matrix',

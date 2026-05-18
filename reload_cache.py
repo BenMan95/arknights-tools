@@ -3,12 +3,12 @@ from penguin_stats import *
 from reserve_amounts import *
 from sanity_values import *
 
-get_operator_data(read_cache=False)
-get_item_data(read_cache=False)
-load_stages(read_cache=False)
-stage_code_map(read_cache=False)
-stage_id_map(read_cache=False)
-load_items(read_cache=False)
-calc_reserve_amounts(read_cache=False)
-load_values_moe(read_cache=False)
-load_values_peteryr(read_cache=False)
+get_operator_data()
+get_item_data()
+load_stages()
+stage_code_map()
+stage_id_map()
+load_items()
+calc_reserve_amounts()
+load_values_moe()
+load_values_peteryr()
