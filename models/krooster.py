@@ -2,16 +2,17 @@ from __future__ import annotations
 
 from pydantic import BaseModel, RootModel, Field
 
+# ========================= SHARED =========================
+
+class Ingredient(BaseModel):
+    id: str
+    quantity: int
+
 # ========================= OPERATORS =========================
 
 class Branch(BaseModel):
     id: str
     name: str
-
-
-class Ingredient(BaseModel):
-    id: str
-    quantity: int
 
 
 class Mastery(BaseModel):
@@ -75,14 +76,10 @@ class Operator(BaseModel, serialize_by_alias=True):
     factionsHidden: list[str] | None = None
 
 
-OperatorDict = RootModel[dict[str, Operator]]
+class OperatorDict(RootModel[dict[str, Operator]]):
+    pass
 
 # ========================= ITEMS =========================
-
-class Ingredient(BaseModel):
-    id: str
-    quantity: int
-
 
 class Item(BaseModel, serialize_by_alias=True):
     id: str
@@ -94,7 +91,8 @@ class Item(BaseModel, serialize_by_alias=True):
     yield_: int | None = Field(None, alias='yield')
 
 
-ItemDict = RootModel[dict[str, Item]]
+class ItemDict(RootModel[dict[str, Item]]):
+    pass
 
 # ========================= VALIDATIONS =========================
 

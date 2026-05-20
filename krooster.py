@@ -12,18 +12,22 @@ ITEM_DATA_URL = 'https://raw.githubusercontent.com/neeia/ak-roster/refs/heads/ma
 @cached('data/operators.json', OperatorDict)
 def get_operator_data() -> OperatorDict:
     logger.info('Loading operator data...')
-    data = requests.get(OPERATOR_DATA_URL).json()
-    return OperatorDict.model_validate(data)
+    json_data = requests.get(OPERATOR_DATA_URL).json()
+    return OperatorDict.model_validate(json_data)
 
 @cached('data/items-krooster.json', ItemDict)
 def get_item_data() -> ItemDict:
     logger.info('Loading item data...')
-    data = requests.get(ITEM_DATA_URL).json()
-    return ItemDict.model_validate(data)
+    json_data = requests.get(ITEM_DATA_URL).json()
+    return ItemDict.model_validate(json_data)
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
     operators = get_operator_data()
-    print(f'{len(operators.root)} operators loaded')
+    logger.info(f'{len(operators.root)} operators loaded')
+
     items = get_item_data()
-    print(f'{len(items.root)} items loaded')
+    logger.info(f'{len(items.root)} items loaded')

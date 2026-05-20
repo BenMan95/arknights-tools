@@ -1,13 +1,14 @@
 import json
 
-from typing import Callable
+# from collections.abc  Callable
+from typing import Callable, Type, Any
 from pydantic import BaseModel
 
 import logging
 logger = logging.getLogger(__name__)
 
-def cached(cache_path: str, model: BaseModel = None, reload: bool = True):
-    def factory(func: Callable[[], any]):
+def cached(cache_path: str, model: Type[BaseModel] | None = None, reload: bool = True):
+    def factory(func: Callable[[], Any]):
         reloaded = False
         def inner():
             nonlocal reloaded
@@ -21,7 +22,7 @@ def cached(cache_path: str, model: BaseModel = None, reload: bool = True):
                     result = model.model_validate(json_data) if model else json_data
                     return result
                 except Exception as e:
-                    logger.error(f'Failed to read cache for {func.__name__}')
+                    logger.error(f'Failed to read cache for {func.__name__}: {e}')
 
             result = func()
 
@@ -31,7 +32,7 @@ def cached(cache_path: str, model: BaseModel = None, reload: bool = True):
                     json.dump(json_data, file)
                     reloaded = True
             except Exception as e:
-                logger.error(f'Failed to write cache for {func.__name__}')
+                logger.error(f'Failed to write cache for {func.__name__}: {e}')
 
             return result
 

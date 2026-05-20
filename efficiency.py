@@ -4,84 +4,81 @@ import numpy as np
 import pandas as pd
 
 from sanity_values import load_values_moe, load_values_peteryr
-from penguin_stats import load_items, load_drops, stage_id_map, convert_stage_codes, stage_id_map
+from penguin_stats import item_map, get_drops, stage_id_code_map, convert_stage_codes, stage_id_code_map
+from models.penguin_stats import Item
+from models.misc import StageDrops
+
+import logging
+logger = logging.getLogger(__name__)
 
 LMD_RATE = 12
 
-def calc_material_value(stage_data, items_dict, values_dict, logging=False):
+def calc_material_value(stage_data: StageDrops,
+                        item_map: dict[str, Item],
+                        values_dict: dict[str, float]) -> float | None:
     material_value = 0
-    for drop in stage_data['drops']:
-        drop_name = items_dict[drop['id']]['name']
+    for drop in stage_data.drops:
+        drop_name = item_map[drop.id].name_i18n.en
 
-        start = drop.get('start')
-        end = drop.get('end')
         cur = time.time() * 1000
-
-        if start and start > cur:
-            if logging:
-                print(f'{stage_id}: {drop_name} skipped (Not started)')
+        if drop.start and drop.start > cur:
+            logger.info(f'{stage_data.id}: {drop_name} skipped (Not started)')
             continue
 
-        if end and end < cur:
-            if logging:
-                print(f'{stage_id}: {drop_name} skipped (Ended)')
+        if drop.end and drop.end < cur:
+            logger.info(f'{stage_data.id}: {drop_name} skipped (Ended)')
             continue
 
         if drop_name not in values_dict:
-            if logging:
-                print(f'{stage_id}: {drop_name} skipped (Unknown sanity value)')
+            logger.info(f'{stage_data.id}: {drop_name} skipped (Unknown sanity value)')
             continue
 
-        material_value += drop['rate'] * values_dict[drop_name]
+        material_value += drop.rate * values_dict[drop_name]
 
     if material_value == 0:
-        print(f'{stage_id}: no drops, skipped')
+        logger.info(f'{stage_data.id}: no drops, skipped')
         return None
 
-    material_value += LMD_RATE * stage_data['sanity'] * values_dict['LMD']
+    material_value += LMD_RATE * stage_data.sanity * values_dict['LMD']
     return material_value
 
 
-def calc_stages_efficiency(stage_ids, logging=False):
-    items_dict = load_items()
-    stage_drops = load_drops(stage_ids)
+def calc_stages_efficiency(stage_ids: list[str]) -> dict[str, float]:
+    items_dict = item_map()
+    stage_drops = get_drops(stage_ids)
     values_dict = load_values_peteryr()
 
-    if logging:
-        print('Processing data...')
+    logger.info('Processing data...')
 
-    results = []
-    for stage_id in stage_drops:
-        data = stage_drops[stage_id]
-        material_value = calc_material_value(data,
-                                             items_dict,
-                                             values_dict,
-                                             logging=logging)
-        results.append({
-            'stage_id': stage_id,
-            'efficiency': material_value / data['sanity'],
-        })
+    results = {}
+    for stage in stage_drops.root.values():
+        material_value = calc_material_value(stage, items_dict, values_dict)
+        if material_value is None:
+            continue
+        results[stage.id] = material_value / stage.sanity
 
     return results
 
 if __name__ == '__main__':
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--codes', action='extend', nargs='*', default=[])
     parser.add_argument('-i', '--ids', action='extend', nargs='*', default=[])
     args = parser.parse_args()
 
     stage_ids = args.ids + convert_stage_codes(args.codes)
-    results = calc_stages_efficiency(stage_ids, logging=False)
-    id_map = stage_id_map()
+    results = calc_stages_efficiency(stage_ids)
+    id_map = stage_id_code_map()
 
     print()
     print('='*25, 'RESULTS', '='*25)
 
-    key = lambda x: -x['efficiency']
-    sorted_results = sorted(results, key=key)
-    for result in sorted_results:
-        stage_id = result['stage_id']
+    key = lambda x: -x[1]
+    sorted_results = sorted(results.items(), key=key)
+    for stage_id, efficiency in sorted_results:
         stage_code = id_map[stage_id]
-        efficiency = result['efficiency']
         print(f'{stage_id} ({stage_code}): {efficiency:.06f}')
 

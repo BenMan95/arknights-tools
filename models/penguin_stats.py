@@ -25,7 +25,6 @@ class ServerExistence(BaseModel):
 
 # ========================= STAGES =========================
 
-
 class Bounds(BaseModel):
     lower: int
     upper: int
@@ -52,7 +51,8 @@ class Stage(BaseModel):
     recognitionOnly: list[str] | None = None
 
 
-StageList = RootModel[list[Stage]]
+class StageList(RootModel[list[Stage]]):
+    pass
 
 # ========================= ITEMS =========================
 
@@ -79,7 +79,7 @@ ItemList = RootModel[list[Item]]
 
 # ========================= MATRIX =========================
 
-class MatrixItem(BaseModel):
+class Drop(BaseModel):
     stageId: str
     itemId: str
     times: int
@@ -89,8 +89,8 @@ class MatrixItem(BaseModel):
     end: int | None
 
 
-class Matrix(BaseModel):
-    matrix: list[MatrixItem]
+class DropMatrix(BaseModel):
+    matrix: list[Drop]
 
 # ========================= GOALS =========================
 
@@ -101,8 +101,43 @@ class Goal(BaseModel):
 
 
 class PlannerConfig(BaseModel, serialize_by_alias=True):
-    field_type: str = Field(..., alias='@type')
+    field_type: str = Field(default='@penguin-statistics/planner/config',
+                            alias='@type')
     items: list[Goal]
+
+# ========================= PLANNING =========================
+
+class Battles(BaseModel):
+    stageId: str
+    stage: str
+    count: str
+    items: dict[str, int]
+
+
+class Synthesis(BaseModel):
+    target: str
+    count: str
+    materials: dict[str, float]
+
+
+class ItemValue(BaseModel):
+    name: str
+    value: float
+
+
+class LevelValues(BaseModel):
+    level: str
+    items: list[ItemValue]
+
+
+class FarmingPlan(BaseModel):
+    cost: int
+    gcost: int
+    gold: int
+    exp: int
+    stages: list[Battles]
+    syntheses: list[Synthesis]
+    values: list[LevelValues]
 
 # ========================= VALIDATIONS =========================
 

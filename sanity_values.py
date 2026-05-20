@@ -53,7 +53,7 @@ def load_values_peteryr() -> dict[str, float]:
         in materials
     }
 
-def _load_values_combined():
+def _load_values_combined() -> dict[str, dict[str, float]]:
     values_moe = load_values_moe()
     values_peteryr = load_values_peteryr()
     values_combined = {}
@@ -74,13 +74,13 @@ def _load_values_combined():
 
     return values_combined
 
-def _disp_table(values):
+def _disp_table(values: dict[str, dict[str, float]]) -> None:
     rows = [
         [key,str(value.get('moe','')),str(value.get('peteryr',''))]
         for key,value
         in values.items()
     ]
-    rows.insert(0, ['name','moe','peteryr'])
+    rows.insert(0, ['Name','Moe','PeterYR'])
 
     cols = zip(*rows)
     widths = [
