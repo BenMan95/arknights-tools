@@ -73,4 +73,3 @@ if __name__ == '__main__':
     for stage_id, efficiency in sorted_results:
         stage_code = stage_map[stage_id].code
         print(f'{stage_id} ({stage_code}): {efficiency:.06f}')
-

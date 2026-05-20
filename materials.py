@@ -1,28 +1,28 @@
-from sanity_values import load_values_peteryr as load_sanity_values
+from sanity_values import load_values_peteryr
 
-materials = """
-Tactical Battle Record,215
-LMD,345200
-Polymerized Gel,8
-Polyester,3
-Sugar,4
-Oriron Cluster,15
-Chip Catalyst,3
-Specialist Chip Pack,6
-Specialist Chip,4
-""".strip()
+import logging
+logger = logging.getLogger(__name__)
 
-sanity_dict = load_sanity_values()
-sanity_dict['Chip Catalyst'] = 122.4
+def calculate_total_value(materials: list[tuple[str, float]]):
+    sanity_dict = load_values_peteryr()
+    sanity_dict['Chip Catalyst'] = 122.4
 
-sanity = 0
-for line in materials.split('\n'):
-    material, amount = line.split(',')
-    amount = int(amount)
-
-    if material in sanity_dict:
+    sanity = 0
+    for material, amount in materials:
+        if material not in sanity_dict:
+            logger.info(f'{material} has unknown sanity value, skipping')
+            continue
         sanity += sanity_dict[material] * amount
-    else:
-        print('Skipping', material)
+    return sanity
 
-print(sanity)
+if __name__ == '__main__':
+    data_str = input().strip()
+
+    materials = []
+    for line in data_str.split('\n'):
+        material, amount = line.split(',')
+        amount = float(amount)
+        materials.append([material, amount])
+
+    sanity = calculate_total_value(materials)
+    print(sanity)
