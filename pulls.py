@@ -71,6 +71,7 @@ class Possibilities:
 start = time.perf_counter()
 
 results = Possibilities()
+i = 0
 try:
     for i in range(num_pulls):
         if i % 50 == 0:
