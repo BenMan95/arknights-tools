@@ -87,7 +87,7 @@ def main():
         item_name: str = item_map[item_id].name_i18n.en
         rarity: int = item_map[item_id].rarity
         count: int = synthesis.count
-        print(f'{rarity} - {item_name} x {count}')
+        print(f'{item_name} (T{rarity}) x {count}')
 
 if __name__ == '__main__':
     main()
