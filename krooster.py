@@ -18,7 +18,7 @@ def get_operator_data() -> OperatorDict:
     logger.info(f'{len(operators.root)} operators loaded.')
     return operators
 
-@cached('data/items-krooster.json', ItemDict)
+@cached('data/items_krooster.json', ItemDict)
 def get_item_data() -> ItemDict:
     logger.info('Loading item data...')
     json_data: dict[str, Any] = requests.get(ITEM_DATA_URL).json()

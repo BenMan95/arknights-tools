@@ -58,7 +58,7 @@ def convert_stage_codes(stage_codes: list[str]) -> list[str]:
 
     return stage_ids
 
-@cached('data/items-penguin-stats.json', ItemList)
+@cached('data/items_penguin_stats.json', ItemList)
 def load_items() -> ItemList:
     logger.info('Loading items...')
     json_data: dict[str, Any] = requests.get(API_BASE + '/items').json()

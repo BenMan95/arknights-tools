@@ -16,7 +16,7 @@ PETERYR_SPREADSHEET_ID = '1RRiTIYVUNUf-xW8ljAJdYEOuSo23lpjHkPa0-zuC_4k'
 PETERYR_SHEET_GID = '253510834'
 PETERYR_URL = f'https://docs.google.com/spreadsheets/d/{PETERYR_SPREADSHEET_ID}/export?format=csv&gid={PETERYR_SHEET_GID}'
 
-@cached('data/values-moe.json')
+@cached('data/values_moe.json')
 def load_values_moe() -> dict[str, float]:
     logger.info("Loading Moe's sanity values...")
     sheet = pd.read_csv(MOE_URL, header=None).to_numpy()
@@ -39,7 +39,7 @@ def load_values_moe() -> dict[str, float]:
         in materials
     }
 
-@cached('data/values-peteryr.json')
+@cached('data/values_peteryr.json')
 def load_values_peteryr() -> dict[str, float]:
     logger.info("Loading PeterYR's sanity values...")
     sheet = pd.read_csv(PETERYR_URL, header=None).to_numpy()
