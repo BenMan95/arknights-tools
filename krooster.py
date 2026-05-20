@@ -26,7 +26,7 @@ def get_item_data() -> ItemDict:
     logger.info(f'{len(items.root)} items loaded.')
     return items
 
-if __name__ == '__main__':
+def main():
     handler = logging.StreamHandler()
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
@@ -36,3 +36,6 @@ if __name__ == '__main__':
 
     items = get_item_data()
     logger.info(f'{len(items.root)} items loaded')
+
+if __name__ == '__main__':
+    main()

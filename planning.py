@@ -8,7 +8,7 @@ from typing import Any
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
+def main():
     handler = logging.StreamHandler()
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
@@ -66,13 +66,13 @@ if __name__ == '__main__':
 
     print('=' * 25, 'PLAN', '=' * 25)
 
-    get_stage_map = get_stage_map()
+    stage_map = get_stage_map()
     sanity: int = plan.cost
     print(f'Farming: {sanity} sanity')
     for battle in plan.stages:
         stage_id: str = battle.stageId
         efficiency: float = efficiency_dict[stage_id]
-        stage_code: str = get_stage_map[stage_id].code
+        stage_code: str = stage_map[stage_id].code
         count: int = battle.count
         print(f'{stage_id} ({stage_code}) x {count}: {efficiency:.5f}')
 
@@ -84,3 +84,6 @@ if __name__ == '__main__':
         item_name: str = item_map[item_id].name_i18n.en
         count: int = synthesis.count
         print(f'{item_name} x {count}')
+
+if __name__ == '__main__':
+    main()

@@ -109,10 +109,13 @@ def get_farming_plan(owned: dict[str, int],
     logger.info(f'{len(farming_plan.stages)} stages, {len(farming_plan.syntheses)} syntheses loaded')
     return farming_plan
 
-if __name__ == '__main__':
+def main():
     handler = logging.StreamHandler()
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
 
     load_stages()
     load_items()
+
+if __name__ == '__main__':
+    main()

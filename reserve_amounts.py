@@ -76,7 +76,7 @@ def calc_reserve_amounts() -> dict[str, int]:
 
     return operator_max
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-a', '--add', action='store_true')
@@ -108,3 +108,5 @@ if __name__ == '__main__':
             else:
                 print(f'{item_id}: {qty}')
 
+if __name__ == '__main__':
+    main()

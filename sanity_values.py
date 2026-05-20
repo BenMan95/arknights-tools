@@ -102,7 +102,10 @@ def _disp_table(values: dict[str, dict[str, float]]) -> None:
             print(divider_str)
     print(divider_str)
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig(level=logging.DEBUG)
     values = _load_values_combined()
     _disp_table(values)
+
+if __name__ == '__main__':
+    main()

@@ -14,7 +14,7 @@ def calculate_total_value(materials: list[tuple[str, float]]) -> float:
             sanity += sanity_dict[material] * amount
     return sanity
 
-if __name__ == '__main__':
+def main():
     data_str = input().strip()
 
     materials: list[tuple[str, float]] = []
@@ -25,3 +25,6 @@ if __name__ == '__main__':
 
     sanity: float = calculate_total_value(materials)
     print(sanity)
+
+if __name__ == '__main__':
+    main()

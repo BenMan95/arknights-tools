@@ -53,7 +53,7 @@ def calc_stages_efficiency(stage_ids: list[str]) -> dict[str, float]:
 
     return stage_efficiency_values
 
-if __name__ == '__main__':
+def main():
     handler = logging.StreamHandler()
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
@@ -75,3 +75,6 @@ if __name__ == '__main__':
     for stage_id, efficiency in sorted_results:
         stage_code: str = stage_map[stage_id].code
         print(f'{stage_id} ({stage_code}): {efficiency:.06f}')
+
+if __name__ == '__main__':
+    main()
