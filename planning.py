@@ -1,10 +1,10 @@
 import argparse
 import json
-from typing import Any
+from typing import Any, Callable
 
 from efficiency import calc_stages_efficiency
 from penguin_stats import get_farming_plan, get_stage_map, get_item_map
-from models.penguin_stats import PlannerConfig, Item, FarmingPlan
+from models.penguin_stats import PlannerConfig, Item, FarmingPlan, Synthesis
 
 import logging
 logger = logging.getLogger(__name__)
@@ -80,11 +80,14 @@ def main():
     print()
 
     print('Crafting:')
-    for synthesis in plan.syntheses:
+    key: Callable[[Synthesis], int] = lambda x: item_map[x.target].rarity
+    syntheses: list[Synthesis] = sorted(plan.syntheses, key=key)
+    for synthesis in syntheses:
         item_id: str = synthesis.target
         item_name: str = item_map[item_id].name_i18n.en
+        rarity: int = item_map[item_id].rarity
         count: int = synthesis.count
-        print(f'{item_name} x {count}')
+        print(f'{rarity} - {item_name} x {count}')
 
 if __name__ == '__main__':
     main()
