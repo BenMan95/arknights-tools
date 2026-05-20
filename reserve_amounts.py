@@ -16,7 +16,7 @@ def _update_dict(old: dict[str, int],
         old_val: int = old.get(key, 0)
         old[key] = func(old_val, value)
 
-def _ingredients_to_dict(mats: list[Ingredient]) -> dict[str, int]:
+def _to_dict(mats: list[Ingredient]) -> dict[str, int]:
     return {
         mat.id: mat.quantity
         for mat in mats
@@ -39,13 +39,13 @@ def calc_reserve_amounts() -> dict[str, int]:
 
         elite_mats: dict[str, int] = {}
         for elite_lvl in operator.eliteLevels:
-            ingredients: dict[str, int] = _ingredients_to_dict(elite_lvl.ingredients)
+            ingredients: dict[str, int] = _to_dict(elite_lvl.ingredients)
             _update_dict(elite_mats, ingredients, add)
         _update_dict(elite_max, elite_mats, max)
 
         skill_mats: dict[str, int] = {}
         for skill_lvl in operator.skillLevels:
-            ingredients: dict[str, int] = _ingredients_to_dict(skill_lvl.ingredients)
+            ingredients: dict[str, int] = _to_dict(skill_lvl.ingredients)
             _update_dict(skill_mats, ingredients, add)
         _update_dict(skill_max, skill_mats, max)
 
@@ -53,7 +53,7 @@ def calc_reserve_amounts() -> dict[str, int]:
         for skill in operator.skillData:
             mastery_mats: dict[str, int] = {}
             for mastery in skill.masteries:
-                ingredients: dict[str, int] = _ingredients_to_dict(mastery.ingredients)
+                ingredients: dict[str, int] = _to_dict(mastery.ingredients)
                 _update_dict(mastery_mats, ingredients, add)
             _update_dict(mastery_max, mastery_mats, max)
             _update_dict(operator_mastery_max, mastery_mats, max)
@@ -62,7 +62,7 @@ def calc_reserve_amounts() -> dict[str, int]:
         for module in operator.moduleData:
             module_mats: dict[str, int] = {}
             for mod_stage in module.stages:
-                ingredients: dict[str, int] = _ingredients_to_dict(mod_stage.ingredients)
+                ingredients: dict[str, int] = _to_dict(mod_stage.ingredients)
                 _update_dict(module_mats, ingredients, add)
             _update_dict(module_max, module_mats, max)
             _update_dict(operator_module_max, module_mats, max)
