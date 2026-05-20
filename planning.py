@@ -59,7 +59,8 @@ if __name__ == '__main__':
         exclusions.extend(new_exclusions)
         if not new_exclusions:
             break
-        logger.info(f'{','.join(new_exclusions)} are inefficient, retrying.')
+        are_is = 'are' if len(new_exclusions) > 1 else 'is'
+        logger.info(f'{','.join(new_exclusions)} {are_is} inefficient, retrying.')
 
     print('=' * 25, 'PLAN', '=' * 25)
 
@@ -69,7 +70,7 @@ if __name__ == '__main__':
     for battle in plan.stages:
         stage_id = battle.stageId
         efficiency = efficiency_dict[stage_id]
-        stage_code = get_stage_map[stage_id].stageId
+        stage_code = get_stage_map[stage_id].code
         count = battle.count
         print(f'{stage_id} ({stage_code}) x {count}: {efficiency:.5f}')
 
