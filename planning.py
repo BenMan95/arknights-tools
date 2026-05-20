@@ -2,7 +2,7 @@ from typing import assert_type
 import argparse
 import json
 from models.penguin_stats import PlannerConfig, FarmingPlan
-from penguin_stats import get_farming_plan, stage_id_code_map, item_map
+from penguin_stats import get_farming_plan, get_stage_map, get_item_map
 from efficiency import calc_stages_efficiency
 
 import logging
@@ -21,14 +21,14 @@ if __name__ == '__main__':
     json_data = json.loads(data_str)
     planner_config = PlannerConfig.model_validate(json_data)
 
-    item_map = item_map()
+    get_item_map = get_item_map()
     owned = {}
     required = {}
     for item_goal in planner_config.items:
-        if item_goal.id not in item_map:
+        if item_goal.id not in get_item_map:
             logger.info(f'Item ID {item_goal.id} not found, skipping.')
             continue
-        if item_map[item_goal.id].itemType != 'MATERIAL':
+        if get_item_map[item_goal.id].itemType != 'MATERIAL':
             continue
         owned[item_goal.id] = item_goal.have
         required[item_goal.id] = item_goal.need
@@ -63,13 +63,13 @@ if __name__ == '__main__':
 
     print('=' * 25, 'PLAN', '=' * 25)
 
-    id_map = stage_id_code_map()
+    get_stage_map = get_stage_map()
     sanity = plan.cost
     print(f'Farming: {sanity} sanity')
     for battle in plan.stages:
         stage_id = battle.stageId
         efficiency = efficiency_dict[stage_id]
-        stage_code = id_map[stage_id]
+        stage_code = get_stage_map[stage_id].stageId
         count = battle.count
         print(f'{stage_id} ({stage_code}) x {count}: {efficiency:.5f}')
 
@@ -78,6 +78,6 @@ if __name__ == '__main__':
     print('Crafting:')
     for synthesis in plan.syntheses:
         item_id = synthesis.target
-        item_name = item_map[item_id].name_i18n.en
+        item_name = get_item_map[item_id].name_i18n.en
         count = synthesis.count
         print(f'{item_name} x {count}')

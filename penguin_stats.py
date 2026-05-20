@@ -1,8 +1,7 @@
 import requests
 
 from utils import cached
-from models.penguin_stats import StageList, ItemList, DropMatrix, Stage, FarmingPlan, Item
-from models.misc import DropRate, StageDrops, DropSummary
+from models.penguin_stats import StageList, ItemList, DropMatrix, Stage, FarmingPlan, Item, Stage
 
 import logging
 logger = logging.getLogger(__name__)
@@ -27,7 +26,7 @@ def load_items() -> ItemList:
     logger.info(f'{len(items.root)} items loaded.')
     return items
 
-def stage_code_id_map() -> dict[str, list[str]]:
+def get_stage_code_map() -> dict[str, list[str]]:
     stages = load_stages()
     code_map = {}
 
@@ -42,18 +41,14 @@ def stage_code_id_map() -> dict[str, list[str]]:
 
     return code_map
 
-def stage_id_code_map() -> dict[str, str]:
+def get_stage_map() -> dict[str, Stage]:
     stages = load_stages()
-    id_map = {}
+    return {
+        stage.stageId: stage
+        for stage in stages.root
+    }
 
-    for stage in stages.root:
-        stage_code = stage.code
-        stage_id = stage.stageId
-        id_map[stage_id] = stage_code
-
-    return id_map
-
-def item_map() -> dict[str, Item]:
+def get_item_map() -> dict[str, Item]:
     items = load_items()
     return {
         item.itemId: item
@@ -61,7 +56,7 @@ def item_map() -> dict[str, Item]:
     }
 
 def convert_stage_codes(stage_codes: list[str]) -> list[str]:
-    code_id_map = stage_code_id_map()
+    code_id_map = get_stage_code_map()
     stage_ids = []
 
     for code in stage_codes:
@@ -77,7 +72,7 @@ def convert_stage_codes(stage_codes: list[str]) -> list[str]:
 
     return stage_ids
 
-def get_drops(stage_ids: list[str]) -> DropSummary:
+def get_drop_matrix(stage_ids: list[str]) -> DropMatrix:
     assert len(stage_ids) > 0
 
     logger.info('Loading stage drops matrix...')
@@ -90,25 +85,7 @@ def get_drops(stage_ids: list[str]) -> DropSummary:
     json_data = requests.get(url, params=params).json()
     drop_matrix = DropMatrix.model_validate(json_data)
     logger.info(f'{len(drop_matrix.matrix)} eles loaded.')
-
-    drop_summary = DropSummary({})
-    for drop in drop_matrix.matrix:
-        stage_id = drop.stageId
-
-        if stage_id not in drop_summary.root:
-            json_data = requests.get(API_BASE + '/stages/' + stage_id).json()
-            stage = Stage.model_validate(json_data)
-            drop_summary.root[stage_id] = StageDrops(id=stage_id,
-                                                     sanity=stage.apCost,
-                                                     drops=[])
-
-        drop_rate = DropRate(id=drop.itemId,
-                             rate=drop.quantity / drop.times,
-                             start=drop.start,
-                             end=drop.end)
-        drop_summary.root[stage_id].drops.append(drop_rate)
-
-    return drop_summary
+    return drop_matrix
 
 def get_farming_plan(owned: dict[str, int],
                      required: dict[str, int],
@@ -138,5 +115,3 @@ if __name__ == '__main__':
 
     load_stages()
     load_items()
-    stage_code_id_map()
-    stage_id_code_map()

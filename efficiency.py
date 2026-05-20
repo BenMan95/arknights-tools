@@ -1,63 +1,55 @@
 import argparse
 import time
-import numpy as np
-import pandas as pd
 
 from sanity_values import load_values_moe, load_values_peteryr
-from penguin_stats import item_map, get_drops, stage_id_code_map, convert_stage_codes, stage_id_code_map
-from models.penguin_stats import Item
-from models.misc import StageDrops
+from penguin_stats import get_item_map, get_drop_matrix, convert_stage_codes, get_stage_map
 
 import logging
 logger = logging.getLogger(__name__)
 
 LMD_RATE = 12
 
-def calc_material_value(stage_data: StageDrops,
-                        item_map: dict[str, Item],
-                        values_dict: dict[str, float]) -> float | None:
-    material_value = 0
-    for drop in stage_data.drops:
-        drop_name = item_map[drop.id].name_i18n.en
-
-        cur = time.time() * 1000
-        if drop.start and drop.start > cur:
-            logger.info(f'{stage_data.id}: {drop_name} skipped (Not started)')
-            continue
-
-        if drop.end and drop.end < cur:
-            logger.info(f'{stage_data.id}: {drop_name} skipped (Ended)')
-            continue
-
-        if drop_name not in values_dict:
-            logger.info(f'{stage_data.id}: {drop_name} skipped (Unknown sanity value)')
-            continue
-
-        material_value += drop.rate * values_dict[drop_name]
-
-    if material_value == 0:
-        logger.info(f'{stage_data.id}: no drops, skipped')
-        return None
-
-    material_value += LMD_RATE * stage_data.sanity * values_dict['LMD']
-    return material_value
-
-
 def calc_stages_efficiency(stage_ids: list[str]) -> dict[str, float]:
-    items_dict = item_map()
-    stage_drops = get_drops(stage_ids)
-    values_dict = load_values_peteryr()
+    now = time.time() * 1000
+    item_dict = get_item_map()
+    drop_matrix = get_drop_matrix(stage_ids)
+    value_dict = load_values_peteryr()
+    stage_map = get_stage_map()
 
     logger.info('Processing data...')
 
-    results = {}
-    for stage in stage_drops.root.values():
-        material_value = calc_material_value(stage, items_dict, values_dict)
-        if material_value is None:
-            continue
-        results[stage.id] = material_value / stage.sanity
+    stage_sanity_values = {}
+    for drop in drop_matrix.matrix:
+        if drop.stageId not in stage_sanity_values:
+            stage_sanity_values[drop.stageId] = 0
 
-    return results
+        drop_name = item_dict[drop.itemId].name_i18n.en
+
+        if drop.start and drop.start > now:
+            logger.info(f'{drop.stageId}: {drop_name} skipped (Not started)')
+            continue
+
+        if drop.end and drop.end < now:
+            logger.info(f'{drop.stageId}: {drop_name} skipped (Ended)')
+            continue
+
+        if drop_name not in value_dict:
+            logger.info(f'{drop.stageId}: {drop_name} skipped (Unknown sanity value)')
+            continue
+
+        drop_value = value_dict[drop_name] * drop.quantity / drop.times
+        stage_sanity_values[drop.stageId] += drop_value
+
+    stage_efficiency_values = {}
+    lmd_efficiency = LMD_RATE * value_dict['LMD']
+    for stage_id, sanity_value in stage_sanity_values.items():
+        if not sanity_value:
+            logger.info(f'{stage_id}: no drops, skipped')
+            continue
+        efficiency = lmd_efficiency + sanity_value/stage_map[stage_id].apCost
+        stage_efficiency_values[stage_id] = efficiency
+
+    return stage_efficiency_values
 
 if __name__ == '__main__':
     handler = logging.StreamHandler()
@@ -71,7 +63,7 @@ if __name__ == '__main__':
 
     stage_ids = args.ids + convert_stage_codes(args.codes)
     results = calc_stages_efficiency(stage_ids)
-    id_map = stage_id_code_map()
+    stage_map = get_stage_map()
 
     print()
     print('='*25, 'RESULTS', '='*25)
@@ -79,6 +71,6 @@ if __name__ == '__main__':
     key = lambda x: -x[1]
     sorted_results = sorted(results.items(), key=key)
     for stage_id, efficiency in sorted_results:
-        stage_code = id_map[stage_id]
+        stage_code = stage_map[stage_id].code
         print(f'{stage_id} ({stage_code}): {efficiency:.06f}')
 
