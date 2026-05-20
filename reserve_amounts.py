@@ -1,27 +1,30 @@
+from typing import Callable
 import argparse
-import requests
 import json
 
-from krooster import *
+from models.krooster import OperatorDict, ItemDict, Ingredient
+from krooster import get_operator_data, get_item_data
 from utils import cached
 
 SHOP_ITEMS = ['30073', '30083', '30093']
 BIG_NUMBER = 999
 
-def update_dict(old, new, func):
+def _update_dict(old: dict[str, int],
+                 new: dict[str, int],
+                 func: Callable[[int, int], int]) -> None:
     for key, value in new.items():
         old_val = old.get(key, 0)
         old[key] = func(old_val, value)
 
-def convert_mats(mats):
+def _ingredients_to_dict(mats: list[Ingredient]) -> dict[str, int]:
     return {
-        mat['id']: mat['quantity']
+        mat.id: mat.quantity
         for mat in mats
     }
 
 @cached('data/reserve.json')
-def calc_reserve_amounts(read_cache=True):
-    operator_data = get_operator_data(read_cache=read_cache)
+def calc_reserve_amounts() -> dict[str, int]:
+    operator_data: OperatorDict = get_operator_data()
 
     operator_max = {}
     elite_max = {}
@@ -30,46 +33,46 @@ def calc_reserve_amounts(read_cache=True):
     module_max = {}
 
     add = lambda a,b:a+b
-    for operator in operator_data.values():
-        if operator['isCnOnly']:
+    for operator in operator_data.root.values():
+        if operator.isCnOnly:
             continue
 
         elite_mats = {}
-        for elite_lvl in operator['eliteLevels']:
-            mats = convert_mats(elite_lvl['ingredients'])
-            update_dict(elite_mats, mats, add)
-        update_dict(elite_max, elite_mats, max)
+        for elite_lvl in operator.eliteLevels:
+            ingredients = _ingredients_to_dict(elite_lvl.ingredients)
+            _update_dict(elite_mats, ingredients, add)
+        _update_dict(elite_max, elite_mats, max)
 
         skill_mats = {}
-        for skill_lvl in operator['skillLevels']:
-            mats = convert_mats(skill_lvl['ingredients'])
-            update_dict(skill_mats, mats, add)
-        update_dict(skill_max, skill_mats, max)
+        for skill_lvl in operator.skillLevels:
+            ingredients = _ingredients_to_dict(skill_lvl.ingredients)
+            _update_dict(skill_mats, ingredients, add)
+        _update_dict(skill_max, skill_mats, max)
 
         operator_mastery_max = {}
-        for skill in operator['skillData']:
+        for skill in operator.skillData:
             mastery_mats = {}
-            for mastery in skill['masteries']:
-                mats = convert_mats(mastery['ingredients'])
-                update_dict(mastery_mats, mats, add)
-            update_dict(mastery_max, mastery_mats, max)
-            update_dict(operator_mastery_max, mastery_mats, max)
+            for mastery in skill.masteries:
+                ingredients = _ingredients_to_dict(mastery.ingredients)
+                _update_dict(mastery_mats, ingredients, add)
+            _update_dict(mastery_max, mastery_mats, max)
+            _update_dict(operator_mastery_max, mastery_mats, max)
 
         operator_module_max = {}
-        for module in operator['moduleData']:
+        for module in operator.moduleData:
             module_mats = {}
-            for mod_stage in module['stages']:
-                mats = convert_mats(mod_stage['ingredients'])
-                update_dict(module_mats, mats, add)
-            update_dict(module_max, module_mats, max)
-            update_dict(operator_module_max, module_mats, max)
+            for mod_stage in module.stages:
+                ingredients = _ingredients_to_dict(mod_stage.ingredients)
+                _update_dict(module_mats, ingredients, add)
+            _update_dict(module_max, module_mats, max)
+            _update_dict(operator_module_max, module_mats, max)
 
         operator_mats = {}
-        update_dict(operator_mats, elite_mats, add)
-        update_dict(operator_mats, skill_mats, add)
-        update_dict(operator_mats, operator_mastery_max, add)
-        update_dict(operator_mats, operator_module_max, add)
-        update_dict(operator_max, operator_mats, max)
+        _update_dict(operator_mats, elite_mats, add)
+        _update_dict(operator_mats, skill_mats, add)
+        _update_dict(operator_mats, operator_mastery_max, add)
+        _update_dict(operator_mats, operator_module_max, add)
+        _update_dict(operator_max, operator_mats, max)
 
     return operator_max
 
@@ -81,8 +84,8 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--shop', action='store_true')
     args = parser.parse_args()
 
-    reserve_amounts = calc_reserve_amounts(read_cache=True)
-    items_dict = get_item_data()
+    reserve_amounts = calc_reserve_amounts()
+    item_data: ItemDict = get_item_data()
 
     if args.add or args.overwrite or args.shop:
         data_str = input()
@@ -100,9 +103,9 @@ if __name__ == '__main__':
         print(json.dumps(data))
     else:
         for item_id, qty in reserve_amounts.items():
-            if item_id in items_dict:
-                name = items_dict[item_id]['name']
-                rarity = items_dict[item_id]['tier']
+            if item_id in item_data.root:
+                name = item_data.root[item_id].name
+                rarity = item_data.root[item_id].tier
                 print(f'{item_id} - {name} ({rarity}): {qty}')
             else:
                 print(f'{item_id}: {qty}')

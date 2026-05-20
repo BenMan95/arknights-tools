@@ -1,9 +1,11 @@
-from utils import cached
-
-import json
-from urllib.parse import quote
 import numpy as np
 import pandas as pd
+
+from utils import cached
+from urllib.parse import quote
+
+import logging
+logger = logging.getLogger(__name__)
 
 MOE_SPREADSHEET_ID = '12X0uBQaN7MuuMWWDTiUjIni_MOP015GnulggmBJgBaQ'
 MOE_SHEET_NAME = quote('Expected Sanity Per Material')
@@ -13,11 +15,9 @@ PETERYR_SPREADSHEET_ID = '1RRiTIYVUNUf-xW8ljAJdYEOuSo23lpjHkPa0-zuC_4k'
 PETERYR_SHEET_GID = '253510834'
 PETERYR_URL = f'https://docs.google.com/spreadsheets/d/{PETERYR_SPREADSHEET_ID}/export?format=csv&gid={PETERYR_SHEET_GID}'
 
-type SanityValues = dict[str, float]
-
-@cached('data/values_moe.json')
-def load_values_moe(read_cache=True):
-    print("Loading Moe's sanity values...")
+@cached('data/values-moe.json')
+def load_values_moe() -> dict[str, float]:
+    logger.info("Loading Moe's sanity values...")
     sheet = pd.read_csv(MOE_URL, header=None).to_numpy()
 
     grouped_materials = [
@@ -30,7 +30,7 @@ def load_values_moe(read_cache=True):
     ]
 
     materials = np.concatenate(grouped_materials)
-    print(len(materials), 'eles loaded.')
+    logger.info(f'{len(materials)} elements loaded.')
 
     out = {
         name: sanity
@@ -40,12 +40,12 @@ def load_values_moe(read_cache=True):
 
     return out
 
-@cached('data/values_moe.json')
-def load_values_peteryr(read_cache=True):
-    print("Loading PeterYR's sanity values...")
+@cached('data/values-peteryr.json')
+def load_values_peteryr() -> dict[str, float]:
+    logger.info("Loading PeterYR's sanity values...")
     sheet = pd.read_csv(PETERYR_URL, header=None).to_numpy()
     materials = sheet[[2,0], 7:].transpose()
-    print(len(materials), 'eles loaded.')
+    logger.info(f'{len(materials)} elements loaded.')
 
     return {
         name: float(sanity)
@@ -53,14 +53,14 @@ def load_values_peteryr(read_cache=True):
         in materials
     }
 
-def _load_values_combined(read_cache=True):
-    values_moe = load_values_moe(read_cache=read_cache)
-    values_peteryr = load_values_peteryr(read_cache=read_cache)
+def _load_values_combined() -> dict[str, dict[str, float]]:
+    values_moe = load_values_moe()
+    values_peteryr = load_values_peteryr()
     values_combined = {}
 
     for key,value in values_moe.items():
         key = key.replace('Skill Summary', 'Skill Summary -')
-        values_combined[key] = { "moe": value }
+        values_combined[key] = { 'moe': value }
 
     for key,value in values_peteryr.items():
         if 'Chip Pack' in key:
@@ -70,17 +70,17 @@ def _load_values_combined(read_cache=True):
 
         if key not in values_combined:
             values_combined[key] = {}
-        values_combined[key]["peteryr"] = value
+        values_combined[key]['peteryr'] = value
 
     return values_combined
 
-def _disp_table(values):
+def _disp_table(values: dict[str, dict[str, float]]) -> None:
     rows = [
         [key,str(value.get('moe','')),str(value.get('peteryr',''))]
         for key,value
         in values.items()
     ]
-    rows.insert(0, ['name','moe','peteryr'])
+    rows.insert(0, ['Name','Moe','PeterYR'])
 
     cols = zip(*rows)
     widths = [
@@ -104,5 +104,6 @@ def _disp_table(values):
     print(divider_str)
 
 if __name__ == '__main__':
-    values = _load_values_combined(read_cache=False)
+    logging.basicConfig(level=logging.DEBUG)
+    values = _load_values_combined()
     _disp_table(values)
