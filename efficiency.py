@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 LMD_RATE: int = 12
 
-def calc_stages_efficiency(stage_ids: list[str]) -> dict[str, float]:
+def calc_stages_efficiency(stage_ids: list[str],
+                           timed: bool = True) -> dict[str, float]:
     now: float = time.time() * 1000
     item_dict: dict[str, Item] = get_item_map()
     drop_matrix: DropMatrix = get_drop_matrix(stage_ids)
@@ -27,11 +28,11 @@ def calc_stages_efficiency(stage_ids: list[str]) -> dict[str, float]:
 
         drop_name: str = item_dict[drop.itemId].name_i18n.en
 
-        if drop.start and drop.start > now:
+        if timed and drop.start and drop.start > now:
             logger.info(f'{drop.stageId}: {drop_name} skipped (Not started)')
             continue
 
-        if drop.end and drop.end < now:
+        if timed and drop.end and drop.end < now:
             logger.info(f'{drop.stageId}: {drop_name} skipped (Ended)')
             continue
 
@@ -59,12 +60,13 @@ def main():
     logger.setLevel(logging.DEBUG)
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-u', '--untimed', action='store_false', dest='timed')
     parser.add_argument('-c', '--codes', action='extend', nargs='*', default=[])
     parser.add_argument('-i', '--ids', action='extend', nargs='*', default=[])
     args = parser.parse_args()
 
     stage_ids: list[str] = args.ids + convert_stage_codes(args.codes)
-    results: dict[str, float] = calc_stages_efficiency(stage_ids)
+    results: dict[str, float] = calc_stages_efficiency(stage_ids, args.timed)
     stage_map: dict[str, Stage] = get_stage_map()
 
     print()
