@@ -12,14 +12,11 @@ def cached(cache_path: str, model: Type[BaseModel] | None = None, reload: bool =
         def inner():
             nonlocal reloaded
 
-            result = None
-
             if reloaded or not reload:
                 try:
                     with open(cache_path, 'r') as file:
                         json_data = json.load(file)
-                    result = model.model_validate(json_data) if model else json_data
-                    return result
+                    return model.model_validate(json_data) if model else json_data
                 except Exception as e:
                     logger.error(f'Failed to read cache for {func.__name__}: {e}')
 
