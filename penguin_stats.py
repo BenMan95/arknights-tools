@@ -1,6 +1,7 @@
+from typing import Any
+
 import requests
 
-from typing import Any
 from utils import cached
 from models.penguin_stats import StageList, ItemList, DropMatrix, Stage, FarmingPlan, Item
 

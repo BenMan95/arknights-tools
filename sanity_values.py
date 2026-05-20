@@ -1,11 +1,12 @@
+import logging
+from typing import Iterable, Any
+
 import numpy as np
 import pandas as pd
 
-from typing import Iterable, Any
 from utils import cached
 from urllib.parse import quote
 
-import logging
 logger = logging.getLogger(__name__)
 
 MOE_SPREADSHEET_ID = '12X0uBQaN7MuuMWWDTiUjIni_MOP015GnulggmBJgBaQ'

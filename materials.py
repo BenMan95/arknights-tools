@@ -1,6 +1,7 @@
+import logging
+
 from sanity_values import load_values_peteryr
 
-import logging
 logger = logging.getLogger(__name__)
 
 def calculate_total_value(materials: list[tuple[str, float]]) -> float:

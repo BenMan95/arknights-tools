@@ -1,12 +1,12 @@
 import argparse
+import logging
 import time
+from typing import Callable
 
 from sanity_values import load_values_peteryr
-from typing import Callable
 from penguin_stats import get_item_map, get_drop_matrix, convert_stage_codes, get_stage_map
 from models.penguin_stats import Item, DropMatrix, Stage
 
-import logging
 logger = logging.getLogger(__name__)
 
 LMD_RATE: int = 12

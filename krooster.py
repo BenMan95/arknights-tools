@@ -1,10 +1,11 @@
+import logging
+from typing import Any
+
 import requests
 
 from utils import cached
 from models.krooster import OperatorDict, ItemDict
-from typing import Any
 
-import logging
 logger = logging.getLogger(__name__)
 
 OPERATOR_DATA_URL = 'https://raw.githubusercontent.com/neeia/ak-roster/refs/heads/main/src/data/operators.json'

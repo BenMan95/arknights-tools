@@ -1,10 +1,9 @@
+import logging
 import json
-
-# from collections.abc  Callable
 from typing import Callable, Type, Any
+
 from pydantic import BaseModel
 
-import logging
 logger = logging.getLogger(__name__)
 
 def cached(cache_path: str, model: Type[BaseModel] | None = None, reload: bool = True):
