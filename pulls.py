@@ -1,5 +1,4 @@
 from fractions import Fraction
-import json
 import time
 
 num_pulls = 5000
