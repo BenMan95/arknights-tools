@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from typing import Iterable, Any
 from utils import cached
 from urllib.parse import quote
 
@@ -32,13 +33,11 @@ def load_values_moe() -> dict[str, float]:
     materials = np.concatenate(grouped_materials)
     logger.info(f'{len(materials)} elements loaded.')
 
-    out = {
+    return {
         name: sanity
         for name, sanity
         in materials
     }
-
-    return out
 
 @cached('data/values-peteryr.json')
 def load_values_peteryr() -> dict[str, float]:
@@ -54,19 +53,19 @@ def load_values_peteryr() -> dict[str, float]:
     }
 
 def _load_values_combined() -> dict[str, dict[str, float]]:
-    values_moe = load_values_moe()
-    values_peteryr = load_values_peteryr()
-    values_combined = {}
+    values_moe: dict[str, float] = load_values_moe()
+    values_peteryr: dict[str, float] = load_values_peteryr()
+    values_combined: dict[str, dict[str, float]] = {}
 
     for key,value in values_moe.items():
-        key = key.replace('Skill Summary', 'Skill Summary -')
+        key: str = key.replace('Skill Summary', 'Skill Summary -')
         values_combined[key] = { 'moe': value }
 
     for key,value in values_peteryr.items():
         if 'Chip Pack' in key:
-            key = 'Chip Pack'
+            key: str = 'Chip Pack'
         elif 'Chip' in key:
-            key = 'Chips'
+            key: str = 'Chips'
 
         if key not in values_combined:
             values_combined[key] = {}
@@ -75,24 +74,24 @@ def _load_values_combined() -> dict[str, dict[str, float]]:
     return values_combined
 
 def _disp_table(values: dict[str, dict[str, float]]) -> None:
-    rows = [
+    rows: list[list[str]] = [
         [key,str(value.get('moe','')),str(value.get('peteryr',''))]
         for key,value
         in values.items()
     ]
     rows.insert(0, ['Name','Moe','PeterYR'])
 
-    cols = zip(*rows)
-    widths = [
+    cols: Iterable[tuple[Any, ...]] = zip(*rows)
+    widths: list[int] = [
         max(map(len,col))
         for col in cols
     ]
-    dividers = ['-'*w for w in widths]
-    divider_str = '+' + '+'.join(dividers) + '+'
+    dividers: list[str] = ['-'*w for w in widths]
+    divider_str: str = '+' + '+'.join(dividers) + '+'
 
     print(divider_str)
     for i,row in enumerate(rows):
-        padded_vals = [
+        padded_vals: list[str] = [
             value.ljust(width)
             for value,width
             in zip(row,widths)

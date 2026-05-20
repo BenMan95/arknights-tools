@@ -1,32 +1,34 @@
+from __future__ import annotations
+
 from fractions import Fraction
 import time
 
-num_pulls = 5000
+num_pulls: int = 5000
 
-culling_threshold = 1e-12
-num_culled = 0
-prob_culled = 0
+culling_threshold: float = 1e-12
+num_culled: int = 0
+prob_culled: float = 0
 
 class State:
 
-    def __init__(self, pity=0, pulls=0):
-        self.pity = pity
-        self.pulls = pulls
+    def __init__(self, pity: int = 0, pulls: int = 0) -> None:
+        self.pity: int = pity
+        self.pulls: int = pulls
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'State(pity={self.pity}, pulls={self.pulls})'
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self.pity + 100 * self.pulls
 
-    def __eq__(self, other):
-        return other and \
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, State) and \
                self.pity == other.pity and \
                self.pulls == other.pulls
 
-    def next_pull(self):
-        numerator = max(1, self.pity-48)
-        odds = numerator / 50
+    def next_pull(self) -> dict[State, float]:
+        numerator: int = max(1, self.pity-48)
+        odds: float = numerator / 50
         #odds = Fraction(numerator, 50)
 
         return {
@@ -36,18 +38,18 @@ class State:
 
 class Possibilities:
 
-    def __init__(self, odds={State(): 1}):
+    def __init__(self, odds: dict[State, float] = {State(): 1.0}) -> None:
         #assert sum(p for p in odds.values()) == 1
         self.odds = odds
 
-    def next_pull(self):
+    def next_pull(self) -> Possibilities:
         global num_culled, prob_culled
 
-        results = {}
+        results: dict[State, float] = {}
 
         for state, p1 in self.odds.items():
             for next_state, p2 in state.next_pull().items():
-                prob = p1 * p2
+                prob: float = p1 * p2
 
                 if prob <= culling_threshold:
                     num_culled += 1
@@ -61,24 +63,24 @@ class Possibilities:
 
         return Possibilities(results)
 
-    def reduced_odds(self):
-        max_pulls = max(state.pulls for state in self.odds.keys())
-        results = [0] * (max_pulls + 1)
+    def reduced_odds(self) -> list[float]:
+        max_pulls: int = max(state.pulls for state in self.odds.keys())
+        results: list[float] = [0] * (max_pulls + 1)
         for state, p in self.odds.items():
             results[state.pulls] += p
         return results
 
-start = time.perf_counter()
+start: float = time.perf_counter()
 
-results = Possibilities()
-i = 0
+results: Possibilities = Possibilities()
+i: int = 0
 try:
     for i in range(num_pulls):
         if i % 50 == 0:
             print(f'{i} pulls: {len(results.odds)} states')
-        results = results.next_pull()
+        results: Possibilities = results.next_pull()
 except KeyboardInterrupt:
-    num_pulls = i
+    num_pulls: int = i
     print(f'Recieved KeyboardInterrupt, exiting at {num_pulls} pulls')
 
 end = time.perf_counter()
@@ -101,14 +103,14 @@ print()
 #        print(f'{n}: {float(p):.6f}')
 #    print(f'{n}: {p:.6f}')
 
-probabilities = results.reduced_odds()
-p_target = Fraction(5,60) * Fraction(3,10)
+probabilities: list[float] = results.reduced_odds()
+p_target: Fraction = Fraction(5,60) * Fraction(3,10)
 #p_target = Fraction(35,100)
-p_total = 0
-enum_six_stars = 0
+p_total: float = 0
+enum_six_stars: float = 0
 for n, p in enumerate(probabilities):
 
-    p_case = 1 - (1-p_target)**n
+    p_case: Fraction = 1 - (1-p_target)**n
     #p_case = (1-p_target) ** n
     p_total += p*p_case
     enum_six_stars += n * p

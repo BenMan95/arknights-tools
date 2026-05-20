@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Type
 from pydantic import BaseModel, RootModel, Field
 
 # ========================= SHARED =========================
@@ -110,13 +111,13 @@ class PlannerConfig(BaseModel, serialize_by_alias=True):
 class Battles(BaseModel):
     stageId: str
     stage: str
-    count: str
+    count: int
     items: dict[str, int]
 
 
 class Synthesis(BaseModel):
     target: str
-    count: str
+    count: int
     materials: dict[str, float]
 
 
@@ -141,7 +142,7 @@ class FarmingPlan(BaseModel):
 
 # ========================= VALIDATIONS =========================
 
-def validate_file(filepath, model):
+def validate_file(filepath: str, model: Type[BaseModel]):
     import json
     with open(filepath, 'r') as file:
         json_data = json.load(file)

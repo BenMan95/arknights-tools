@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Type
 from pydantic import BaseModel, RootModel, Field
 
 # ========================= SHARED =========================
@@ -96,7 +97,7 @@ class ItemDict(RootModel[dict[str, Item]]):
 
 # ========================= VALIDATIONS =========================
 
-def validate_file(filepath, model):
+def validate_file(filepath: str, model: Type[BaseModel]):
     import json
     with open(filepath, 'r') as file:
         json_data = json.load(file)
