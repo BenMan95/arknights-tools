@@ -112,7 +112,7 @@ class Battles(BaseModel):
     stageId: str
     stage: str
     count: int
-    items: dict[str, int]
+    items: dict[str, float]
 
 
 class Synthesis(BaseModel):
