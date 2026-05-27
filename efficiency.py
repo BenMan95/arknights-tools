@@ -13,6 +13,10 @@ LMD_RATE: int = 12
 
 def calc_stages_efficiency(stage_ids: list[str],
                            timed: bool = True) -> dict[str, float]:
+    logger.info('No stage IDs given, returning blank results...')
+    if len(stage_ids) == 0:
+        return {}
+
     now: float = time.time() * 1000
     item_dict: dict[str, Item] = get_item_map()
     drop_matrix: DropMatrix = get_drop_matrix(stage_ids)

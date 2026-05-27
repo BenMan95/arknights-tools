@@ -29,7 +29,7 @@ def main():
         if item_goal.id not in item_map:
             logger.info(f'Item ID {item_goal.id} not found, skipping.')
             continue
-        if item_map[item_goal.id].itemType != 'MATERIAL':
+        if item_map[item_goal.id].itemType not in ['MATERIAL', 'ARKPLANNER']:
             continue
         owned[item_goal.id] = item_goal.have
         required[item_goal.id] = item_goal.need
