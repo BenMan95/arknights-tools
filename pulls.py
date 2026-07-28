@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import random
 import time
 from fractions import Fraction
 
-num_pulls: int = 5000
+CULLING_THRESHOLD: float = 1e-12
 
-culling_threshold: float = 1e-12
 num_culled: int = 0
 prob_culled: float = 0
 
 
 class State:
+    pity: int
+    pulls: int
+
     def __init__(self, pity: int = 0, pulls: int = 0) -> None:
         self.pity: int = pity
         self.pulls: int = pulls
@@ -56,7 +59,7 @@ class Possibilities:
             for next_state, p2 in state.next_pull().items():
                 prob: float = p1 * p2
 
-                if prob <= culling_threshold:
+                if prob <= CULLING_THRESHOLD:
                     num_culled += 1
                     prob_culled += prob
                     continue
@@ -76,50 +79,108 @@ class Possibilities:
         return results
 
 
-start: float = time.perf_counter()
+def test1():
+    num_pulls: int = 5000
 
-results: Possibilities = Possibilities()
-i: int = 0
-try:
-    for i in range(num_pulls):
-        if i % 50 == 0:
-            print(f'{i} pulls: {len(results.odds)} states')
-        results: Possibilities = results.next_pull()
-except KeyboardInterrupt:
-    num_pulls: int = i
-    print(f'Recieved KeyboardInterrupt, exiting at {num_pulls} pulls')
+    start: float = time.perf_counter()
 
-end = time.perf_counter()
+    results: Possibilities = Possibilities()
+    i: int = 0
+    try:
+        for i in range(num_pulls):
+            if i % 50 == 0:
+                print(f'{i} pulls: {len(results.odds)} states')
+            results: Possibilities = results.next_pull()
+    except KeyboardInterrupt:
+        num_pulls: int = i
+        print(f'Recieved KeyboardInterrupt, exiting at {num_pulls} pulls')
 
-print(f'Finished in {end - start:.6f} seconds')
-print()
+    end = time.perf_counter()
 
-print(f'Culled states: {num_culled}')
-print(f'Culled probability: {prob_culled:.6f}')
+    print(f'Finished in {end - start:.6f} seconds')
+    print()
 
-total_prob = sum(results.odds.values())
-print(f'Remaining states: {len(results.odds)}')
-print(f'Remaining probability: {total_prob:.6f}')
-print()
+    print(f'Culled states: {num_culled}')
+    print(f'Culled probability: {prob_culled:.6f}')
 
-# print(results.reduced_odds())
+    total_prob = sum(results.odds.values())
+    print(f'Remaining states: {len(results.odds)}')
+    print(f'Remaining probability: {total_prob:.6f}')
+    print()
 
-# for n, p in enumerate(results.reduced_odds()):
-#    if p >= 0.000001:
-#        print(f'{n}: {float(p):.6f}')
-#    print(f'{n}: {p:.6f}')
+    # print(results.reduced_odds())
 
-probabilities: list[float] = results.reduced_odds()
-p_target: Fraction = Fraction(5, 60) * Fraction(3, 10)
-# p_target = Fraction(35,100)
-p_total: float = 0
-enum_six_stars: float = 0
-for n, p in enumerate(probabilities):
-    p_case: Fraction = 1 - (1 - p_target) ** n
-    # p_case = (1-p_target) ** n
-    p_total += p * p_case
-    enum_six_stars += n * p
+    # for n, p in enumerate(results.reduced_odds()):
+    #    if p >= 0.000001:
+    #        print(f'{n}: {float(p):.6f}')
+    #    print(f'{n}: {p:.6f}')
 
-print(f'Target probability: {p_total:.6%}')
-print(f'Expected # of 6 stars: {enum_six_stars}')
-print(f'Rate: {enum_six_stars / num_pulls}')
+    probabilities: list[float] = results.reduced_odds()
+    p_target: Fraction = Fraction(5, 60) * Fraction(3, 10)
+    # p_target = Fraction(35,100)
+    p_total: float = 0
+    enum_six_stars: float = 0
+    for n, p in enumerate(probabilities):
+        p_case: Fraction = 1 - (1 - p_target) ** n
+        # p_case = (1-p_target) ** n
+        p_total += p * p_case
+        enum_six_stars += n * p
+
+    print(f'Target probability: {p_total:.6%}')
+    print(f'Expected # of 6 stars: {enum_six_stars}')
+    print(f'Rate: {enum_six_stars / num_pulls}')
+
+
+def simulate_banner(rate_target: float, hard_pity: int) -> int:
+    pity = 0
+
+    for pull in range(1, hard_pity):
+        rate_6star = max(1, pity - 48) / 50
+
+        roll = random.random()
+        if roll >= rate_6star:
+            pity += 1
+            continue
+
+        pity = 0
+        roll = random.random()
+        if roll > rate_target:
+            continue
+
+        return pull
+
+    return hard_pity
+
+
+def simulate_all():
+    limited1 = simulate_banner(rate_target=0.7, hard_pity=300)
+    remaining_pity = 300 - limited1
+    limited2 = simulate_banner(rate_target=0.35, hard_pity=remaining_pity)
+    mh1 = simulate_banner(rate_target=0.5, hard_pity=120)
+    mh2 = simulate_banner(rate_target=0.5, hard_pity=120)
+    return limited1 + limited2 + mh1 + mh2
+
+
+def test2():
+    samples = 10000
+    counts: dict[int, int] = {}
+    highest = 0
+    for _ in range(samples):
+        pulls = simulate_all()
+        if pulls not in counts:
+            counts[pulls] = 0
+        counts[pulls] += 1
+        highest = max(highest, pulls)
+
+    cum_sum = 0
+    for pulls in range(highest):
+        if pulls in counts:
+            cum_sum += counts[pulls]
+
+        if pulls % 10 == 0:
+            prob = cum_sum / samples
+            print(f'{pulls} pulls: {prob:.4f}')
+
+
+if __name__ == '__main__':
+    test2()
