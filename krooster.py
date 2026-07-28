@@ -3,13 +3,14 @@ from typing import Any
 
 import requests
 
+from models.krooster import ItemDict, OperatorDict
 from utils import cached
-from models.krooster import OperatorDict, ItemDict
 
 logger = logging.getLogger(__name__)
 
 OPERATOR_DATA_URL = 'https://raw.githubusercontent.com/neeia/ak-roster/refs/heads/main/src/data/operators.json'
 ITEM_DATA_URL = 'https://raw.githubusercontent.com/neeia/ak-roster/refs/heads/main/src/data/items.json'
+
 
 @cached('data/operators.json', OperatorDict)
 def get_operator_data() -> OperatorDict:
@@ -19,6 +20,7 @@ def get_operator_data() -> OperatorDict:
     logger.info(f'{len(operators.root)} operators loaded.')
     return operators
 
+
 @cached('data/items_krooster.json', ItemDict)
 def get_item_data() -> ItemDict:
     logger.info('Loading item data...')
@@ -26,6 +28,7 @@ def get_item_data() -> ItemDict:
     items: ItemDict = ItemDict.model_validate(json_data)
     logger.info(f'{len(items.root)} items loaded.')
     return items
+
 
 def main():
     handler = logging.StreamHandler()
@@ -37,6 +40,7 @@ def main():
 
     items = get_item_data()
     logger.info(f'{len(items.root)} items loaded')
+
 
 if __name__ == '__main__':
     main()

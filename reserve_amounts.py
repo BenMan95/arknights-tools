@@ -1,26 +1,26 @@
 import argparse
 import json
-from typing import Callable
+from collections.abc import Callable
 
+from krooster import get_item_data, get_operator_data
+from models.krooster import Ingredient, ItemDict, OperatorDict
 from utils import cached
-from krooster import get_operator_data, get_item_data
-from models.krooster import OperatorDict, ItemDict, Ingredient
 
 SHOP_ITEMS = ['30073', '30083', '30093']
 BIG_NUMBER = 999
 
-def _update_dict(old: dict[str, int],
-                 new: dict[str, int],
-                 func: Callable[[int, int], int]) -> None:
+
+def _update_dict(
+    old: dict[str, int], new: dict[str, int], func: Callable[[int, int], int]
+) -> None:
     for key, value in new.items():
         old_val: int = old.get(key, 0)
         old[key] = func(old_val, value)
 
+
 def _to_dict(mats: list[Ingredient]) -> dict[str, int]:
-    return {
-        mat.id: mat.quantity
-        for mat in mats
-    }
+    return {mat.id: mat.quantity for mat in mats}
+
 
 @cached('data/reserve.json')
 def calc_reserve_amounts() -> dict[str, int]:
@@ -32,7 +32,7 @@ def calc_reserve_amounts() -> dict[str, int]:
     mastery_max: dict[str, int] = {}
     module_max: dict[str, int] = {}
 
-    add: Callable[[int, int], int] = lambda a,b:a+b
+    add: Callable[[int, int], int] = lambda a, b: a + b
     for operator in operator_data.root.values():
         if operator.isCnOnly:
             continue
@@ -76,6 +76,7 @@ def calc_reserve_amounts() -> dict[str, int]:
 
     return operator_max
 
+
 def main():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
@@ -107,6 +108,7 @@ def main():
                 print(f'{item_id} - {name} ({rarity}): {qty}')
             else:
                 print(f'{item_id}: {qty}')
+
 
 if __name__ == '__main__':
     main()

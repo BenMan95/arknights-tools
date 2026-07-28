@@ -1,16 +1,24 @@
+import logging
 from typing import Any
 
 import requests
 
+from models.penguin_stats import (
+    DropMatrix,
+    FarmingPlan,
+    Item,
+    ItemList,
+    Stage,
+    StageList,
+)
 from utils import cached
-from models.penguin_stats import StageList, ItemList, DropMatrix, Stage, FarmingPlan, Item
 
-import logging
 logger = logging.getLogger(__name__)
 
 SERVER = 'CN'
 API_BASE = 'https://penguin-stats.io/PenguinStats/api/v2'
 PLANNER_URL = 'https://planner.penguin-stats.io/plan'
+
 
 @cached('data/stages.json', StageList)
 def load_stages() -> StageList:
@@ -20,12 +28,11 @@ def load_stages() -> StageList:
     logger.info(f'{len(stages.root)} stages loaded.')
     return stages
 
+
 def get_stage_map() -> dict[str, Stage]:
     stages: StageList = load_stages()
-    return {
-        stage.stageId: stage
-        for stage in stages.root
-    }
+    return {stage.stageId: stage for stage in stages.root}
+
 
 def get_stage_code_map() -> dict[str, list[str]]:
     stages: StageList = load_stages()
@@ -41,6 +48,7 @@ def get_stage_code_map() -> dict[str, list[str]]:
         code_map[stage_code].append(stage_id)
 
     return code_map
+
 
 def convert_stage_codes(stage_codes: list[str]) -> list[str]:
     stage_code_map: dict[str, list[str]] = get_stage_code_map()
@@ -59,6 +67,7 @@ def convert_stage_codes(stage_codes: list[str]) -> list[str]:
 
     return stage_ids
 
+
 @cached('data/items_penguin_stats.json', ItemList)
 def load_items() -> ItemList:
     logger.info('Loading items...')
@@ -67,12 +76,11 @@ def load_items() -> ItemList:
     logger.info(f'{len(items.root)} items loaded.')
     return items
 
+
 def get_item_map() -> dict[str, Item]:
     items: ItemList = load_items()
-    return {
-        item.itemId: item
-        for item in items.root
-    }
+    return {item.itemId: item for item in items.root}
+
 
 def get_drop_matrix(stage_ids: list[str]) -> DropMatrix:
     assert len(stage_ids) > 0
@@ -89,9 +97,10 @@ def get_drop_matrix(stage_ids: list[str]) -> DropMatrix:
     logger.info(f'{len(drop_matrix.matrix)} eles loaded.')
     return drop_matrix
 
-def get_farming_plan(owned: dict[str, int],
-                     required: dict[str, int],
-                     exclude: list[str] = []) -> FarmingPlan:
+
+def get_farming_plan(
+    owned: dict[str, int], required: dict[str, int], exclude: list[str] = []
+) -> FarmingPlan:
     payload: dict[str, Any] = {
         'owned': owned,
         'required': required,
@@ -107,8 +116,11 @@ def get_farming_plan(owned: dict[str, int],
     logger.info('Loading farming plan...')
     json_data: dict[str, Any] = requests.post(PLANNER_URL, json=payload).json()
     farming_plan: FarmingPlan = FarmingPlan.model_validate(json_data)
-    logger.info(f'{len(farming_plan.stages)} stages, {len(farming_plan.syntheses)} syntheses loaded')
+    logger.info(
+        f'{len(farming_plan.stages)} stages, {len(farming_plan.syntheses)} syntheses loaded'
+    )
     return farming_plan
+
 
 def main():
     handler = logging.StreamHandler()
@@ -117,6 +129,7 @@ def main():
 
     load_stages()
     load_items()
+
 
 if __name__ == '__main__':
     main()

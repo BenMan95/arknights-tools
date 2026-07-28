@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Type
-from pydantic import BaseModel, RootModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 # ========================= SHARED =========================
+
 
 class I18n(BaseModel):
     en: str
@@ -24,7 +24,9 @@ class ServerExistence(BaseModel):
     KR: Existence
     US: Existence
 
+
 # ========================= STAGES =========================
+
 
 class Bounds(BaseModel):
     lower: int
@@ -55,7 +57,9 @@ class Stage(BaseModel):
 class StageList(RootModel[list[Stage]]):
     pass
 
+
 # ========================= ITEMS =========================
+
 
 class Alias(BaseModel):
     ja: list[str] | None = None
@@ -80,6 +84,7 @@ ItemList = RootModel[list[Item]]
 
 # ========================= MATRIX =========================
 
+
 class Drop(BaseModel):
     stageId: str
     itemId: str
@@ -93,7 +98,9 @@ class Drop(BaseModel):
 class DropMatrix(BaseModel):
     matrix: list[Drop]
 
+
 # ========================= GOALS =========================
+
 
 class Goal(BaseModel):
     id: str
@@ -102,11 +109,12 @@ class Goal(BaseModel):
 
 
 class PlannerConfig(BaseModel, serialize_by_alias=True):
-    field_type: str = Field(default='@penguin-statistics/planner/config',
-                            alias='@type')
+    field_type: str = Field(default='@penguin-statistics/planner/config', alias='@type')
     items: list[Goal]
 
+
 # ========================= PLANNING =========================
+
 
 class Battles(BaseModel):
     stageId: str
@@ -140,13 +148,17 @@ class FarmingPlan(BaseModel):
     syntheses: list[Synthesis]
     values: list[LevelValues]
 
+
 # ========================= VALIDATIONS =========================
 
-def validate_file(filepath: str, model: Type[BaseModel]):
+
+def validate_file(filepath: str, model: type[BaseModel]):
     import json
+
     with open(filepath, 'r') as file:
         json_data = json.load(file)
         model.model_validate(json_data)
+
 
 if __name__ == '__main__':
     validate_file('data/stages.json', StageList)

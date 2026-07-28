@@ -1,13 +1,15 @@
 import argparse
 import json
-from typing import Any, Callable
+import logging
+from collections.abc import Callable
+from typing import Any
 
 from efficiency import calc_stages_efficiency
-from penguin_stats import get_farming_plan, get_stage_map, get_item_map
-from models.penguin_stats import PlannerConfig, Item, FarmingPlan, Synthesis
+from models.penguin_stats import FarmingPlan, Item, PlannerConfig, Synthesis
+from penguin_stats import get_farming_plan, get_item_map, get_stage_map
 
-import logging
 logger = logging.getLogger(__name__)
+
 
 def main():
     handler = logging.StreamHandler()
@@ -43,10 +45,9 @@ def main():
         logger.info(f'Attempt {attempts}...')
         plan = get_farming_plan(owned, required, exclusions)
 
-        stage_ids: list[str] = [ stage.stageId for stage in plan.stages ]
+        stage_ids: list[str] = [stage.stageId for stage in plan.stages]
         new_stage_ids: list[str] = [
-            stage_id for stage_id in stage_ids
-            if stage_id not in efficiency_dict
+            stage_id for stage_id in stage_ids if stage_id not in efficiency_dict
         ]
 
         new_efficiency_dict: dict[str, float] = calc_stages_efficiency(new_stage_ids)
@@ -54,7 +55,8 @@ def main():
             efficiency_dict[stage_id] = efficiency
 
         new_exclusions: list[str] = [
-            stage_id for stage_id in new_stage_ids
+            stage_id
+            for stage_id in new_stage_ids
             if efficiency_dict[stage_id] < args.threshold
         ]
 
@@ -63,7 +65,7 @@ def main():
 
         exclusions.extend(new_exclusions)
         are_is: str = 'are' if len(new_exclusions) > 1 else 'is'
-        logger.info(f'{','.join(new_exclusions)} {are_is} inefficient, retrying.')
+        logger.info(f'{",".join(new_exclusions)} {are_is} inefficient, retrying.')
 
     print('=' * 25, 'PLAN', '=' * 25)
 
@@ -88,6 +90,7 @@ def main():
         rarity: int = item_map[item_id].rarity
         count: int = synthesis.count
         print(f'{item_name} (T{rarity}) x {count}')
+
 
 if __name__ == '__main__':
     main()

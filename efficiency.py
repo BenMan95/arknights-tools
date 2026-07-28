@@ -1,18 +1,25 @@
 import argparse
 import logging
 import time
-from typing import Callable
+from collections.abc import Callable
 
+from models.penguin_stats import DropMatrix, Item, Stage
+from penguin_stats import (
+    convert_stage_codes,
+    get_drop_matrix,
+    get_item_map,
+    get_stage_map,
+)
 from sanity_values import load_values_peteryr
-from penguin_stats import get_item_map, get_drop_matrix, convert_stage_codes, get_stage_map
-from models.penguin_stats import Item, DropMatrix, Stage
 
 logger = logging.getLogger(__name__)
 
 LMD_RATE: int = 12
 
-def calc_stages_efficiency(stage_ids: list[str],
-                           timed: bool = True) -> dict[str, float]:
+
+def calc_stages_efficiency(
+    stage_ids: list[str], timed: bool = True
+) -> dict[str, float]:
     logger.info('No stage IDs given, returning blank results...')
     if len(stage_ids) == 0:
         return {}
@@ -53,10 +60,11 @@ def calc_stages_efficiency(stage_ids: list[str],
         if not sanity_value:
             logger.info(f'{stage_id}: no drops, skipped')
             continue
-        efficiency: float = lmd_efficiency + sanity_value/stage_map[stage_id].apCost
+        efficiency: float = lmd_efficiency + sanity_value / stage_map[stage_id].apCost
         stage_efficiency_values[stage_id] = efficiency
 
     return stage_efficiency_values
+
 
 def main():
     handler = logging.StreamHandler()
@@ -74,13 +82,14 @@ def main():
     stage_map: dict[str, Stage] = get_stage_map()
 
     print()
-    print('='*25, 'RESULTS', '='*25)
+    print('=' * 25, 'RESULTS', '=' * 25)
 
     key: Callable[[tuple[str, float]], float] = lambda x: -x[1]
     sorted_results: list[tuple[str, float]] = sorted(results.items(), key=key)
     for stage_id, efficiency in sorted_results:
         stage_code: str = stage_map[stage_id].code
         print(f'{stage_id} ({stage_code}): {efficiency:.06f}')
+
 
 if __name__ == '__main__':
     main()

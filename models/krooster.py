@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from typing import Type
-from pydantic import BaseModel, RootModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 # ========================= SHARED =========================
+
 
 class Ingredient(BaseModel):
     id: str
     quantity: int
 
+
 # ========================= OPERATORS =========================
+
 
 class Branch(BaseModel):
     id: str
@@ -80,7 +82,9 @@ class Operator(BaseModel, serialize_by_alias=True):
 class OperatorDict(RootModel[dict[str, Operator]]):
     pass
 
+
 # ========================= ITEMS =========================
+
 
 class Item(BaseModel, serialize_by_alias=True):
     id: str
@@ -95,13 +99,17 @@ class Item(BaseModel, serialize_by_alias=True):
 class ItemDict(RootModel[dict[str, Item]]):
     pass
 
+
 # ========================= VALIDATIONS =========================
 
-def validate_file(filepath: str, model: Type[BaseModel]):
+
+def validate_file(filepath: str, model: type[BaseModel]):
     import json
+
     with open(filepath, 'r') as file:
         json_data = json.load(file)
         model.model_validate(json_data)
+
 
 if __name__ == '__main__':
     validate_file('data/operators.json', OperatorDict)
