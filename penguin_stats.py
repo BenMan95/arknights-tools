@@ -99,8 +99,13 @@ def get_drop_matrix(stage_ids: list[str]) -> DropMatrix:
 
 
 def get_farming_plan(
-    owned: dict[str, int], required: dict[str, int], exclude: list[str] = []
+    owned: dict[str, int],
+    required: dict[str, int],
+    exclude: list[str] | None = None,
 ) -> FarmingPlan:
+    if exclude is None:
+        exclude = []
+
     payload: dict[str, Any] = {
         'owned': owned,
         'required': required,

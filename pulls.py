@@ -40,7 +40,10 @@ class State:
 
 
 class Possibilities:
-    def __init__(self, odds: dict[State, float] = {State(): 1.0}) -> None:
+    def __init__(self, odds: dict[State, float] | None = None) -> None:
+        if odds is None:
+            odds = {State(): 1.0}
+
         # assert sum(p for p in odds.values()) == 1
         self.odds = odds
 
@@ -66,7 +69,7 @@ class Possibilities:
         return Possibilities(results)
 
     def reduced_odds(self) -> list[float]:
-        max_pulls: int = max(state.pulls for state in self.odds.keys())
+        max_pulls: int = max(state.pulls for state in self.odds)
         results: list[float] = [0] * (max_pulls + 1)
         for state, p in self.odds.items():
             results[state.pulls] += p
