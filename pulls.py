@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 import time
+from collections import defaultdict
 from fractions import Fraction
 
 CULLING_THRESHOLD: float = 1e-12
@@ -161,14 +162,12 @@ def simulate_all():
     return limited1 + limited2 + mh1 + mh2
 
 
-def test2():
+def test_pull_chances():
     samples = 10000
-    counts: dict[int, int] = {}
+    counts: dict[int, int] = defaultdict(int)
     highest = 0
     for _ in range(samples):
         pulls = simulate_all()
-        if pulls not in counts:
-            counts[pulls] = 0
         counts[pulls] += 1
         highest = max(highest, pulls)
 
@@ -177,10 +176,17 @@ def test2():
         if pulls in counts:
             cum_sum += counts[pulls]
 
-        if pulls % 10 == 0:
-            prob = cum_sum / samples
+        prob = cum_sum / samples
+        if pulls % 10 == 0 and prob > 0.5 and prob < 0.95:
             print(f'{pulls} pulls: {prob:.4f}')
 
 
+def test_average_pulls():
+    samples = 10000
+    runs = [simulate_all() for _ in range(samples)]
+    average = sum(runs) / samples
+    print(f'Average pulls: {average:.4f}')
+
 if __name__ == '__main__':
-    test2()
+    test_pull_chances()
+    test_average_pulls()
