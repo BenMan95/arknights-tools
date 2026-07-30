@@ -6,6 +6,8 @@ from urllib.parse import quote
 import numpy as np
 import pandas as pd
 
+from krooster import get_item_data
+from models.krooster import ItemDict
 from utils import cached
 
 logger = logging.getLogger(__name__)
@@ -54,9 +56,17 @@ def _load_values_combined() -> dict[str, dict[str, float]]:
     values_peteryr: dict[str, float] = load_values_peteryr()
     values_combined: dict[str, dict[str, float]] = {}
 
+    krooster_items: ItemDict = get_item_data()
+    item_tiers: dict[str, int] = {
+        item.name: item.tier for item in krooster_items.root.values()
+    }
+
     for key, value in values_moe.items():
-        key: str = key.replace('Skill Summary', 'Skill Summary -')
-        values_combined[key] = {'moe': value}
+        mapped_key: str = key
+        mapped_key = mapped_key.replace('Skill Summary', 'Skill Summary -')
+        mapped_key = mapped_key.replace('烧结核凝晶', 'Nucleic Crystal Sinter')
+        
+        values_combined[mapped_key] = {'moe': value}
 
     for key, value in values_peteryr.items():
         if 'Chip Pack' in key:
@@ -68,15 +78,25 @@ def _load_values_combined() -> dict[str, dict[str, float]]:
             values_combined[key] = {}
         values_combined[key]['peteryr'] = value
 
+    for key, value in values_combined.items():
+        if key in item_tiers:
+            value['tier'] = item_tiers[key]
+
     return values_combined
 
 
 def _disp_table(values: dict[str, dict[str, float]]) -> None:
     rows: list[list[str]] = [
-        [key, str(value.get('moe', '')), str(value.get('peteryr', ''))]
+        [
+            key,
+            str(value.get('moe', '')),
+            str(value.get('peteryr', '')),
+            str(value.get('tier', '')),
+        ]
         for key, value in values.items()
     ]
-    rows.insert(0, ['Name', 'Moe', 'PeterYR'])
+    rows.sort(key=lambda x: (int(x[3] or 0), float(x[2] or 0)))
+    rows.insert(0, ['Name', 'Moe', 'PeterYR', 'Tier'])
 
     cols: Iterable[tuple[Any, ...]] = zip(*rows)
     widths: list[int] = [max(map(len, col)) for col in cols]
