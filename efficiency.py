@@ -1,6 +1,7 @@
 import argparse
 import logging
 import time
+from collections import defaultdict
 from collections.abc import Callable
 
 from models.penguin_stats import DropMatrix, Item, Stage
@@ -32,11 +33,8 @@ def calc_stages_efficiency(
 
     logger.info('Processing data...')
 
-    stage_sanity_values: dict[str, float] = {}
+    stage_sanity_values: dict[str, float] = defaultdict(float)
     for drop in drop_matrix.matrix:
-        if drop.stageId not in stage_sanity_values:
-            stage_sanity_values[drop.stageId] = 0
-
         drop_name: str = item_dict[drop.itemId].name_i18n.en
 
         if timed and drop.start and drop.start > now:
@@ -54,7 +52,7 @@ def calc_stages_efficiency(
         drop_value: float = value_dict[drop_name] * drop.quantity / drop.times
         stage_sanity_values[drop.stageId] += drop_value
 
-    stage_efficiency_values: dict[str, float] = {}
+    stage_efficiency_values: dict[str, float] = defaultdict(float)
     lmd_efficiency: float = LMD_RATE * value_dict['LMD']
     for stage_id, sanity_value in stage_sanity_values.items():
         if not sanity_value:
