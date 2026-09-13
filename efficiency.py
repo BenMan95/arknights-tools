@@ -1,5 +1,7 @@
 import argparse
+import itertools
 import logging
+import re
 import time
 from collections import defaultdict
 from collections.abc import Callable
@@ -18,11 +20,28 @@ logger = logging.getLogger(__name__)
 LMD_RATE: int = 12
 
 
+def expand_codes(codes: list[str]):
+    output: list[str] = []
+
+    pattern = r'(\d+)\*(\d+)'
+    for code in codes:
+        matches: list[tuple[str, str]] = re.findall(pattern, code)
+
+        ranges = [range(int(start), int(end) + 1) for start, end in matches]
+
+        for values in itertools.product(*ranges):
+            iterator = iter(values)
+            subbed = re.sub(pattern, lambda _: str(next(iterator)), code)
+            output.append(subbed)
+
+    return output
+
+
 def calc_stages_efficiency(
     stage_ids: list[str], timed: bool = True
 ) -> dict[str, float]:
-    logger.info('No stage IDs given, returning blank results...')
     if len(stage_ids) == 0:
+        logger.info('No stage IDs given, returning blank results...')
         return {}
 
     now: float = time.time() * 1000
@@ -61,6 +80,10 @@ def calc_stages_efficiency(
         efficiency: float = lmd_efficiency + sanity_value / stage_map[stage_id].apCost
         stage_efficiency_values[stage_id] = efficiency
 
+    for id in stage_ids:
+        if id not in stage_efficiency_values:
+            logger.info(f'No results for {id}')
+
     return stage_efficiency_values
 
 
@@ -75,7 +98,8 @@ def main():
     parser.add_argument('-i', '--ids', action='extend', nargs='*', default=[])
     args = parser.parse_args()
 
-    stage_ids: list[str] = args.ids + convert_stage_codes(args.codes)
+    expanded_codes = convert_stage_codes(expand_codes(args.codes))
+    stage_ids: list[str] = expand_codes(args.ids) + expanded_codes
     results: dict[str, float] = calc_stages_efficiency(stage_ids, args.timed)
     stage_map: dict[str, Stage] = get_stage_map()
 
