@@ -4,8 +4,8 @@ import logging
 from collections.abc import Callable
 from typing import Any
 
-from models.custom import StageEfficiency
 from efficiency import calc_stages_efficiency
+from models.custom import StageEfficiency
 from models.penguin_stats import FarmingPlan, Item, PlannerConfig, Synthesis
 from penguin_stats import get_farming_plan, get_item_map, get_stage_map
 
@@ -58,7 +58,7 @@ def main():
         new_exclusions: list[str] = [
             stage_id
             for stage_id in new_stage_ids
-            if efficiency_dict[stage_id] < args.threshold
+            if efficiency_dict[stage_id].efficiency < args.threshold
         ]
 
         if not new_exclusions:
@@ -81,7 +81,7 @@ def main():
         efficiency: float = stage_efficiency.efficiency
         main_drop: str = stage_efficiency.main_drop
         main_rate = stage_efficiency.main_drop_efficiency / stage_efficiency.efficiency
-        print(f'{stage_id} ({stage_code}) x {count}: {efficiency:.5f} ({main_rate:.3%} {main_drop})')
+        print(f'{stage_id} ({stage_code}) x {count}: {efficiency:.5f} ({main_rate:.1%} {main_drop})')
 
     print()
 
