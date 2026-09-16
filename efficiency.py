@@ -116,8 +116,8 @@ def main():
         stage_code: str = stage_map[stage_id].code
         efficiency = stage_efficiency.efficiency
         main_drop = stage_efficiency.main_drop
-        main_drop_efficiency = stage_efficiency.main_drop_efficiency
-        print(f'{stage_id} ({stage_code}): {efficiency:.06f} ({main_drop}: {main_drop_efficiency:.06f})')
+        main_rate = stage_efficiency.main_drop_efficiency / stage_efficiency.efficiency
+        print(f'{stage_id} ({stage_code}): {efficiency:.05f} ({main_rate:.1%} {main_drop})')
 
 
 if __name__ == '__main__':

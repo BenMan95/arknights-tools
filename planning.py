@@ -38,7 +38,7 @@ def main():
         required[item_goal.id] = item_goal.need
 
     exclusions: list[str] = []
-    efficiency_dict: dict[str, float] = {}
+    efficiency_dict: dict[str, StageEfficiency] = {}
     attempts: int = 0
     plan: FarmingPlan | None = None
     while True:
@@ -52,8 +52,8 @@ def main():
         ]
 
         new_efficiency_dict: dict[str, StageEfficiency] = calc_stages_efficiency(new_stage_ids)
-        for stage_id, efficiency_data in new_efficiency_dict.items():
-            efficiency_dict[stage_id] = efficiency_data.efficiency
+        for stage_id, stage_efficiency in new_efficiency_dict.items():
+            efficiency_dict[stage_id] = stage_efficiency
 
         new_exclusions: list[str] = [
             stage_id
@@ -75,10 +75,13 @@ def main():
     print(f'Farming: {sanity} sanity')
     for battle in plan.stages:
         stage_id: str = battle.stageId
-        efficiency: float = efficiency_dict[stage_id]
         stage_code: str = stage_map[stage_id].code
         count: int = battle.count
-        print(f'{stage_id} ({stage_code}) x {count}: {efficiency:.5f}')
+        stage_efficiency: StageEfficiency = efficiency_dict[stage_id]
+        efficiency: float = stage_efficiency.efficiency
+        main_drop: str = stage_efficiency.main_drop
+        main_rate = stage_efficiency.main_drop_efficiency / stage_efficiency.efficiency
+        print(f'{stage_id} ({stage_code}) x {count}: {efficiency:.5f} ({main_rate:.3%} {main_drop})')
 
     print()
 
