@@ -92,7 +92,6 @@ def get_drop_matrix(stage_ids: list[str]) -> DropMatrix:
         'stageFilter': ','.join(stage_ids),
         'show_closed_zones': True,
     }
-    print('Fetching drops from', stage_ids)
     json_data: dict[str, Any] = requests.get(url, params=params).json()
     drop_matrix: DropMatrix = DropMatrix.model_validate(json_data)
     logger.info(f'{len(drop_matrix.matrix)} eles loaded.')

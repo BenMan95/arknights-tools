@@ -4,6 +4,7 @@ import logging
 from collections.abc import Callable
 from typing import Any
 
+from models.custom import StageEfficiency
 from efficiency import calc_stages_efficiency
 from models.penguin_stats import FarmingPlan, Item, PlannerConfig, Synthesis
 from penguin_stats import get_farming_plan, get_item_map, get_stage_map
@@ -50,9 +51,9 @@ def main():
             stage_id for stage_id in stage_ids if stage_id not in efficiency_dict
         ]
 
-        new_efficiency_dict: dict[str, float] = calc_stages_efficiency(new_stage_ids)
-        for stage_id, efficiency in new_efficiency_dict.items():
-            efficiency_dict[stage_id] = efficiency
+        new_efficiency_dict: dict[str, StageEfficiency] = calc_stages_efficiency(new_stage_ids)
+        for stage_id, efficiency_data in new_efficiency_dict.items():
+            efficiency_dict[stage_id] = efficiency_data.efficiency
 
         new_exclusions: list[str] = [
             stage_id

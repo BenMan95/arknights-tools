@@ -88,38 +88,6 @@ def calc_stages_efficiency(
                 main_drop_efficiency=drop_efficiency,
             )
 
-    # stage_sanity_values: dict[str, float] = defaultdict(float)
-    # for drop in drop_matrix.matrix:
-    #     drop_name: str = item_dict[drop.itemId].name_i18n.en
-
-    #     if timed and drop.start and drop.start > now:
-    #         logger.info(f'{drop.stageId}: {drop_name} skipped (Not started)')
-    #         continue
-
-    #     if timed and drop.end and drop.end < now:
-    #         logger.info(f'{drop.stageId}: {drop_name} skipped (Ended)')
-    #         continue
-
-    #     if drop_name not in value_dict:
-    #         logger.info(f'{drop.stageId}: {drop_name} skipped (Unknown sanity value)')
-    #         continue
-
-    #     drop_value: float = value_dict[drop_name] * drop.quantity / drop.times
-    #     stage_sanity_values[drop.stageId] += drop_value
-
-    # stage_efficiency_values: dict[str, StageEfficiency] = {}
-    # lmd_efficiency: float = LMD_RATE * value_dict['LMD']
-    # for stage_id, sanity_value in stage_sanity_values.items():
-    #     if not sanity_value:
-    #         logger.info(f'{stage_id}: no drops, skipped')
-    #         continue
-    #     efficiency: float = lmd_efficiency + sanity_value / stage_map[stage_id].apCost
-    #     stage_efficiency_values[stage_id] = efficiency
-
-    # for id in stage_ids:
-    #     if id not in stage_efficiency_values:
-    #         logger.info(f'No results for {id}')
-
     return stage_efficiency_values
 
 
