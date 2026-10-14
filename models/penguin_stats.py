@@ -119,7 +119,7 @@ class PlannerConfig(BaseModel, serialize_by_alias=True):
 class Battles(BaseModel):
     stageId: str
     stage: str
-    count: int
+    count: float
     items: dict[str, float]
 
 

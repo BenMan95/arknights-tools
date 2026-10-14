@@ -19,6 +19,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--threshold', type=float, default=0.99)
+    parser.add_argument('-e', '--exclusions', action='extend', nargs='*', default=[])
     args = parser.parse_args()
 
     data_str: str = input()
@@ -37,7 +38,7 @@ def main():
         owned[item_goal.id] = item_goal.have
         required[item_goal.id] = item_goal.need
 
-    exclusions: list[str] = []
+    exclusions: list[str] = args.exclusions
     efficiency_dict: dict[str, StageEfficiency] = {}
     attempts: int = 0
     plan: FarmingPlan | None = None
